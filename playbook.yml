@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  become: false
+  tasks:
+    - name: touch file
+      file:
+        name: "{{ item }}"
+        state: touch
+      with_items:
+        "{{ files | default([]) }}"
+      when: "{{ foo | default(true) }}"

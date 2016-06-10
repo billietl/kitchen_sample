@@ -1,0 +1,56 @@
+driver:
+  name: docker
+  use_sudo: false
+
+provisioner:
+  require_ansible_repo: false
+  hosts: localhost
+
+platforms:
+  - name: debian-8-2.1
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:jessie-2.1
+  - name: ubuntu-14.04-2.1
+    driver_config:
+      image: hub.alterway.fr/kitchen-ansible:trusty-2.1
+
+verifier:
+  name: serverspec
+
+suites:
+  - name: not touch
+    provisioner:
+      name: ansible_playbook
+      idempotency_test: false
+      playbook: ./playbook.yml
+    verifier:
+      patterns:
+        - spec/success_spec.rb
+        - spec/random_spec.rb
+
+  - name: touch
+    provisioner:
+      name: ansible_playbook
+      idempotency_test: false
+      playbook: ./playbook.yml
+      extra_vars:
+        files:
+          - /etc/foo.bar
+          - /this/is/a/non/existing/path/that/will/fail
+    verifier:
+      patterns:
+        - spec/success_spec.rb
+        - spec/random_spec.rb
+
+  - name: fail
+    provisioner:
+      name: ansible_playbook
+      idempotency_test: false
+      playbook: ./playbook.yml
+      extra_vars:
+        files:
+          - /this/is/a/non/existing/path/that/will/fail
+    verifier:
+      patterns:
+        - spec/success_spec.rb
+        - spec/random_spec.rb
